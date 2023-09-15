@@ -1,6 +1,4 @@
-import { GlobalStyle } from 'GlobalStyle';
-import { Layout } from 'Layout';
-import { Component } from 'react';
+import { useState, useEffect } from 'react';
 
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -9,27 +7,23 @@ import { ContactForm } from './ContactForm/ContactForm';
 import { ContactList } from './ContactList/ContactList';
 import { Filter } from './Filter/Filter';
 
-export class App extends Component {
-  state = {
-  contacts: [],
-    filter: '',
+export const App = () => {
+  const [contacts, setContacts] = useState([]);
+  const [filter, setFilter] = useState('');
   };
 
-    componentDidMount() {
-    const savedContscts = localStorage.getItem('contacts');
-    if (savedContscts !== null) {
-      this.setState({ contacts: JSON.parse(savedContscts) });
-    }
-  }
+useEffect(() => {
+  const contacts = localStorage.getItem('contacts');
+  if (contacts !== null) setContacts(JSON.parse(contacts));
+}, []);
 
-  componentDidUpdate(prevProps, prevState) {
-    if (prevState.contacts !== this.state.contacts) {
-      localStorage.setItem('contacts', JSON.stringify(this.state.contacts));
-    }
-  }
+useEffect(() => {
+    if (!contacts.length) return;
+    localStorage.setItem('contacts', JSON.stringify(contacts));
+  }, [contacts]);
 
-  onSubmitForm = (newContact) => {
-    const isDublicate = this.state.contacts.some(
+  const onSubmitForm = newContact => {
+    const isDublicate = contacts.some(
       contact =>
         contact.name.toLowerCase() === newContact.name.toLowerCase() ||
         contact.number === newContact.number
@@ -45,50 +39,42 @@ export class App extends Component {
         }
       );
       return;
-    } else {
-      this.setState(prevState => ({
-        contacts: [...prevState.contacts, newContact],
-      }));
-    }
+    } 
+      setContacts(prevContacts => [...prevContacts, newContact]);
+    };
+
+ const handleFiltrChange = filter => {
+    setFilter(filter.toLowerCase());
   };
 
- handleFiltrChange = value => {
-    this.setState({ filter: value });
-  };
-
-  filterContacts = (contacts, filter) => {
+  const filterContacts = (contacts, filter) => {
     return contacts.filter(contact => {
       return contact.name.toLowerCase().includes(filter.toLowerCase());
     });
   };
 
-  handleDeleteContact = contactId => {
-    this.setState(prevState => ({
-      contacts: prevState.contacts.filter(contact => contact.id !== contactId),
-    }));
+  const handleDeleteContact = contactId => {
+    setContacts(prevState =>
+      prevState.filter(contact => contact.id !== contactId),
+    );
   };
 
-
-  render() {
-    const { contacts, filter } = this.state;
-    const filteredContacts = this.filterContacts(contacts, filter);
+    // const filteredContacts = filterContacts(contacts, filter);
+    
     return (
-      <Layout>
       <Section title={'Phonebook'}>
-        <ContactForm onSubmit={this.onSubmitForm} />
+        <ContactForm onSubmit={onSubmitForm} />
         </Section>
         <Section title={'Contacts'}>
-          <Filter value={filter} onFilterChange={this.handleFiltrChange} />
+          <Filter onFilterChange={handleFiltrChange} />
 
         <ContactList
           contacts={filteredContacts}
-          onDeleteContact={this.handleDeleteContact}
+          onDeleteContact={handleDeleteContact}
         />
         </Section>
         
         <ToastContainer />
         <GlobalStyle />
-      </Layout>
     );
-  }
-}
+    };
