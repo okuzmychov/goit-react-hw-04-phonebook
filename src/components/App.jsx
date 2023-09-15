@@ -10,14 +10,14 @@ import { Filter } from './Filter/Filter';
 export const App = () => {
   const [contacts, setContacts] = useState([]);
   const [filter, setFilter] = useState('');
-  };
 
-useEffect(() => {
-  const contacts = localStorage.getItem('contacts');
-  if (contacts !== null) setContacts(JSON.parse(contacts));
-}, []);
 
-useEffect(() => {
+  useEffect(() => {
+    const contacts = localStorage.getItem('contacts');
+    if (contacts !== null) setContacts(JSON.parse(contacts));
+  }, []);
+
+  useEffect(() => {
     if (!contacts.length) return;
     localStorage.setItem('contacts', JSON.stringify(contacts));
   }, [contacts]);
@@ -39,42 +39,44 @@ useEffect(() => {
         }
       );
       return;
-    } 
-      setContacts(prevContacts => [...prevContacts, newContact]);
-    };
+    }
+    setContacts(prevContacts => [...prevContacts, newContact]);
+  };
 
- const handleFiltrChange = filter => {
+  const handleFiltrChange = filter => {
     setFilter(filter.toLowerCase());
   };
 
-  const filterContacts = (contacts, filter) => {
-    return contacts.filter(contact => {
-      return contact.name.toLowerCase().includes(filter.toLowerCase());
-    });
+  // const filterContacts = () =>
+  //   contacts.filter(contact =>
+  //     contact.name.toLowerCase().includes(filter.toLowerCase())
+  //   );
+
+
+  const handleDeleteContact = id => {
+    setContacts(prevContacts => prevContacts.filter(el => el.id !== id));
   };
 
-  const handleDeleteContact = contactId => {
-    setContacts(prevState =>
-      prevState.filter(contact => contact.id !== contactId),
-    );
-  };
-
-    // const filteredContacts = filterContacts(contacts, filter);
-    
-    return (
-      <Section title={'Phonebook'}>
-        <ContactForm onSubmit={onSubmitForm} />
-        </Section>
-        <Section title={'Contacts'}>
-          <Filter onFilterChange={handleFiltrChange} />
-
+ 
+return (
+  <>
+    <Section title={'Phonebook'}>
+      <ContactForm onSubmit={onSubmitForm} />
+    </Section>
+    <Section title={'Contacts'}>
+      <Filter onFilterChange={handleFiltrChange} />
+      {contacts.length ? (
         <ContactList
-          contacts={filteredContacts}
+          contacts={contacts.filter(el =>
+            el.name.toLowerCase().includes(filter)
+          )}
           onDeleteContact={handleDeleteContact}
         />
-        </Section>
-        
-        <ToastContainer />
-        <GlobalStyle />
-    );
-    };
+      ) : (
+        <p>No contacts</p>
+      )}
+    </Section>
+    <ToastContainer />
+  </>
+);
+};
